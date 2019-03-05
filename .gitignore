@@ -1,4 +1,11 @@
+# intelliJ
+.idea
+
+# eclipse
 target
 .classpath
 .project
 .settings
+
+# zooDataDir for test
+.zooDataDir
