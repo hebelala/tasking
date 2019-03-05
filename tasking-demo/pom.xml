@@ -27,7 +27,7 @@
 					<execution>
 						<phase>package</phase>
 						<goals>
-							<goal>zip</goal>
+							<goal>run</goal>
 						</goals>
 					</execution>
 				</executions>

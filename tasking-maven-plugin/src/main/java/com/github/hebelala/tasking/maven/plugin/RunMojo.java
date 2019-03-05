@@ -1,6 +1,7 @@
 package com.github.hebelala.tasking.maven.plugin;
 
-import org.apache.maven.plugin.AbstractMojo;
+import java.io.File;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -9,11 +10,12 @@ import org.apache.maven.plugins.annotations.Mojo;
  * @author hebelala
  */
 @Mojo(name = "run")
-public class RunMojo extends AbstractMojo {
+public class RunMojo extends ResolveTaskingContainerMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		getLog().info("run...");
+		File taskingContainer = resolveTC();
+		getLog().info("resolved file: " + taskingContainer.getAbsoluteFile());
 	}
 
 }
