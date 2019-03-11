@@ -1,5 +1,6 @@
 # intelliJ
 .idea
+*.iml
 
 # eclipse
 target
