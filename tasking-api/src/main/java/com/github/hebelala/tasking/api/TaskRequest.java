@@ -1,8 +1,12 @@
 package com.github.hebelala.tasking.api;
 
+import com.github.hebelala.tasking.api.trigger.Trigger;
+
 /**
  * @author hebelala
  */
-public class TaskRequest {
+public interface TaskRequest {
+
+    Trigger getTrigger();
 
 }
