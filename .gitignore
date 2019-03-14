@@ -10,3 +10,6 @@ target
 
 # zooDataDir for test
 .zooDataDir
+
+# useless
+.DS_Store
