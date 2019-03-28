@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="dir">${sys:tasking.log.dir}</Property>
+        <Property name="pattern">[%d{DEFAULT}][%level][%thread][%logger] >> %msg%n</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${pattern}" charset="UTF-8"/>
+        </Console>
+        <RollingRandomAccessFile
+                name="File"
+                fileName="${dir}/tasking.log"
+                filePattern="${dir}/tasking-%i.log">
+            <PatternLayout pattern="${pattern}" charset="UTF-8"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="50"/>
+        </RollingRandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="${sys:tasking.log.appender:-File}"/>
+        </Root>
+    </Loggers>
+</Configuration>
