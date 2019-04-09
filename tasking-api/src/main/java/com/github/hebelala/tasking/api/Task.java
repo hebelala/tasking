@@ -5,6 +5,6 @@ package com.github.hebelala.tasking.api;
  */
 public interface Task {
 
-    TaskResponse run(TaskRequest taskRequest);
+  Response run(Request request);
 
 }

@@ -7,8 +7,8 @@ import java.net.MalformedURLException;
  */
 public class Main {
 
-    public static void main(String[] args) throws MalformedURLException {
-        new Container().start();
-    }
+  public static void main(String[] args) throws MalformedURLException {
+    new Container().start();
+  }
 
 }

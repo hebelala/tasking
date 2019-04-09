@@ -5,10 +5,10 @@ package com.github.hebelala.tasking.zookeeper.monitor;
  */
 public abstract class AbstractMonitor {
 
-    protected boolean closed;
+  protected boolean closed;
 
-    public void close() {
-        closed = true;
-    }
+  public void close() {
+    closed = true;
+  }
 
 }

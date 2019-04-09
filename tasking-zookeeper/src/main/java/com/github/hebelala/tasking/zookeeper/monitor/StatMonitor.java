@@ -14,67 +14,67 @@ import org.apache.zookeeper.data.Stat;
  */
 public class StatMonitor extends AbstractMonitor implements Watcher, AsyncCallback.StatCallback {
 
-    private ZooKeeper zk;
-    private String path;
-    private boolean existing;
-    private StatListener statListener;
+  private ZooKeeper zk;
+  private String path;
+  private boolean existing;
+  private StatListener statListener;
 
-    public StatMonitor(ZooKeeper zk, String path, boolean initExisting, StatListener statListener) {
-        this.zk = zk;
-        this.path = path;
-        this.existing = initExisting;
-        this.statListener = statListener;
+  public StatMonitor(ZooKeeper zk, String path, boolean initExisting, StatListener statListener) {
+    this.zk = zk;
+    this.path = path;
+    this.existing = initExisting;
+    this.statListener = statListener;
+    registerWatcher();
+  }
+
+  @Override
+  public void processResult(int rc, String path, Object ctx, Stat stat) {
+    if (closed) {
+      return;
+    }
+    switch (Code.get(rc)) {
+      case OK:
+        if (!existing) {
+          existing = true;
+          statListener.created();
+        }
+        break;
+      case NONODE:
+        if (existing) {
+          existing = false;
+          statListener.deleted();
+        }
+        break;
+      default:
         registerWatcher();
     }
+  }
 
-    public interface StatListener {
-
-        void created();
-
-        void deleted();
-
+  @Override
+  public void process(WatchedEvent event) {
+    if (closed) {
+      return;
     }
-
-    @Override
-    public void processResult(int rc, String path, Object ctx, Stat stat) {
-        if (closed) {
-            return;
-        }
-        switch (Code.get(rc)) {
-            case OK:
-                if (!existing) {
-                    existing = true;
-                    statListener.created();
-                }
-                break;
-            case NONODE:
-                if (existing) {
-                    existing = false;
-                    statListener.deleted();
-                }
-                break;
-            default:
-                registerWatcher();
-        }
+    switch (event.getType()) {
+      case NodeCreated:
+      case NodeDeleted:
+      case NodeDataChanged:
+        registerWatcher();
+        break;
+      default:
     }
+  }
 
-    @Override
-    public void process(WatchedEvent event) {
-        if (closed) {
-            return;
-        }
-        switch (event.getType()) {
-            case NodeCreated:
-            case NodeDeleted:
-            case NodeDataChanged:
-                registerWatcher();
-                break;
-            default:
-        }
-    }
+  private void registerWatcher() {
+    zk.exists(path, this, this, null);
+  }
 
-    private void registerWatcher() {
-        zk.exists(path, this, this, null);
-    }
+  public interface StatListener {
+
+    void created();
+
+    void deleted();
+
+  }
 
 }

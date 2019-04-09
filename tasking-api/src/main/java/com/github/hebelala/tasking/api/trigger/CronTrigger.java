@@ -7,8 +7,8 @@ import java.util.Date;
  */
 public interface CronTrigger extends Trigger {
 
-    String getCron();
+  String getCron();
 
-    Date getNextFireTime();
+  Date getNextFireTime();
 
 }

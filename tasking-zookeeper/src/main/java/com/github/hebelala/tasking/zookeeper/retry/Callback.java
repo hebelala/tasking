@@ -5,6 +5,6 @@ package com.github.hebelala.tasking.zookeeper.retry;
  */
 public interface Callback {
 
-    void call() throws Exception;
+  void call() throws Exception;
 
 }

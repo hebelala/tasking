@@ -1,7 +1,6 @@
 package com.github.hebelala.tasking.api.trigger.impl;
 
 import com.github.hebelala.tasking.api.trigger.CronTrigger;
-
 import java.util.Date;
 
 /**
@@ -9,20 +8,20 @@ import java.util.Date;
  */
 public class CronTriggerImpl implements CronTrigger {
 
-    private String cron;
+  private String cron;
 
-    public CronTriggerImpl(String cron) {
-        this.cron = cron;
-    }
+  public CronTriggerImpl(String cron) {
+    this.cron = cron;
+  }
 
-    @Override
-    public String getCron() {
-        return cron;
-    }
+  @Override
+  public String getCron() {
+    return cron;
+  }
 
-    @Override
-    public Date getNextFireTime() {
-        // TODO
-        return null;
-    }
+  @Override
+  public Date getNextFireTime() {
+    // TODO
+    return null;
+  }
 }
