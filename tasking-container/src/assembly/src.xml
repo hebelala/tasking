@@ -1,56 +1,73 @@
+<!--
+
+    Copyright © 2019 hebelala (hebelala@qq.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
 <assembly xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
   xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
-  <id>zip</id>
+	<id>zip</id>
 
-  <formats>
-    <format>zip</format>
-  </formats>
+	<formats>
+		<format>zip</format>
+	</formats>
 
-  <dependencySets>
-    <dependencySet>
-      <outputDirectory>/lib</outputDirectory>
-      <includes>
-        <include>com.github.hebelala:tasking-container:*</include>
-      </includes>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/lib/lib</outputDirectory>
-      <excludes>
-        <exclude>com.github.hebelala:tasking-container:*</exclude>
-      </excludes>
-    </dependencySet>
-  </dependencySets>
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>/lib</outputDirectory>
+			<includes>
+				<include>com.github.hebelala:tasking-container:*</include>
+			</includes>
+		</dependencySet>
+		<dependencySet>
+			<outputDirectory>/lib/lib</outputDirectory>
+			<excludes>
+				<exclude>com.github.hebelala:tasking-container:*</exclude>
+			</excludes>
+		</dependencySet>
+	</dependencySets>
 
-  <fileSets>
-    <fileSet>
-      <directory>src/assembly/apps</directory>
-      <outputDirectory>apps</outputDirectory>
-      <excludes>
-        <exclude>.gitkeep</exclude>
-      </excludes>
-    </fileSet>
-    <fileSet>
-      <directory>src/assembly/bin</directory>
-      <outputDirectory>bin</outputDirectory>
-    </fileSet>
-    <fileSet>
-      <directory>src/assembly/logs</directory>
-      <outputDirectory>logs</outputDirectory>
-      <excludes>
-        <exclude>.gitkeep</exclude>
-      </excludes>
-    </fileSet>
-  </fileSets>
+	<fileSets>
+		<fileSet>
+			<directory>src/assembly/apps</directory>
+			<outputDirectory>apps</outputDirectory>
+			<excludes>
+				<exclude>.gitkeep</exclude>
+			</excludes>
+		</fileSet>
+		<fileSet>
+			<directory>src/assembly/bin</directory>
+			<outputDirectory>bin</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>src/assembly/logs</directory>
+			<outputDirectory>logs</outputDirectory>
+			<excludes>
+				<exclude>.gitkeep</exclude>
+			</excludes>
+		</fileSet>
+	</fileSets>
 
-  <files>
-    <file>
-      <source>src/assembly/bin/tasking-container.sh</source>
-      <outputDirectory>bin</outputDirectory>
-      <destName>tasking-container.sh</destName>
-      <fileMode>777</fileMode>
-      <lineEnding>unix</lineEnding>
-    </file>
-  </files>
+	<files>
+		<file>
+			<source>src/assembly/bin/tasking-container.sh</source>
+			<outputDirectory>bin</outputDirectory>
+			<destName>tasking-container.sh</destName>
+			<fileMode>777</fileMode>
+			<lineEnding>unix</lineEnding>
+		</file>
+	</files>
 
 </assembly>

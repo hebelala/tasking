@@ -13,24 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.hebelala.tasking.utils;
+package com.github.hebelala.tasking.zookeeper.monitor;
 
-import java.util.Objects;
+import org.apache.zookeeper.ZooKeeper;
 
 /**
  * @author hebelala
  */
-public final class StringUtils {
+public interface Monitor {
 
-	public static boolean isBlank(String s) {
-		return s == null || s.trim().isEmpty();
-	}
+	void registerTo(ZooKeeper zooKeeper);
 
-	public static boolean isNotBlank(String s) {
-		return s != null && !s.trim().isEmpty();
-	}
+	void close();
 
-	public static boolean equals(String s, String s2) {
-		return Objects.equals(s, s2);
-	}
 }

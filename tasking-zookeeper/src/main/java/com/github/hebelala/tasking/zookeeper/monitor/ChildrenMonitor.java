@@ -15,30 +15,31 @@
  */
 package com.github.hebelala.tasking.zookeeper.monitor;
 
-import java.util.Arrays;
+import java.util.List;
 
 import org.apache.zookeeper.AsyncCallback;
-import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.data.Stat;
 
+import com.github.hebelala.tasking.utils.CollectionUtils;
+
 /**
- * Data monitor, will watch the path's create/change/delete events. The zk
+ * Data monitor, will watch the create/delete events of path's children. The zk
  * client must has the READ permission with the path.
  *
  * @author hebelala
  */
-public abstract class DataMonitor extends AbstractMonitor
-		implements Watcher, AsyncCallback.StatCallback, AsyncCallback.DataCallback {
+public abstract class ChildrenMonitor extends AbstractMonitor
+		implements Watcher, AsyncCallback.StatCallback, AsyncCallback.ChildrenCallback {
 
 	private String path;
-	private byte[] preData;
+	private List<String> preChildren;
 
-	public DataMonitor(String path, byte[] initData) {
+	public ChildrenMonitor(String path, List<String> initChildren) {
 		this.path = path;
-		this.preData = initData;
+		this.preChildren = initChildren;
 	}
 
 	@Override
@@ -49,50 +50,46 @@ public abstract class DataMonitor extends AbstractMonitor
 	@Override
 	public void process(WatchedEvent event) {
 		switch (event.getType()) {
-		case NodeCreated:
 		case NodeDataChanged:
-			registerGetDataWatcher();
-			break;
 		case NodeDeleted:
 			registerExistsWatcher();
 			break;
+		case NodeCreated:
+		case NodeChildrenChanged:
+			registerGetChildrenWatcher();
+			break;
 		default:
+		}
+	}
+
+	@Override
+	public void processResult(int rc, String path, Object ctx, List<String> children) {
+		switch (Code.get(rc)) {
+		case OK:
+			doBusiness(children);
+			break;
+		case NONODE:
+			assert children == null : "The children should be null when NoNode, oh my god!";
+			doBusiness(null);
+			registerExistsWatcher();
+			break;
+		default:
+			registerGetChildrenWatcher();
 		}
 	}
 
 	@Override
 	public void processResult(int rc, String path, Object ctx, Stat stat) {
-		byte[] data = null;
 		switch (Code.get(rc)) {
 		case OK:
-			try {
-				data = zooKeeper.getData(path, false, null);
-			} catch (KeeperException e) {
-				// We don't need to worry about recovering now.
-				// The watch callbacks will kick off any exception handling.
-			} catch (InterruptedException e) {
-				return;
-			}
+			registerGetChildrenWatcher();
+			break;
 		case NONODE:
-			doBusiness(data);
+			assert stat == null : "The stat should be null when NoNode, oh my god!";
+			doBusiness(null);
 			break;
 		default:
 			registerExistsWatcher();
-		}
-	}
-
-	@Override
-	public void processResult(int rc, String path, Object ctx, byte[] data, Stat stat) {
-		switch (Code.get(rc)) {
-		case OK:
-			doBusiness(data);
-			break;
-		case NONODE:
-			doBusiness(data);
-			registerExistsWatcher();
-			break;
-		default:
-			registerGetDataWatcher();
 		}
 	}
 
@@ -103,20 +100,20 @@ public abstract class DataMonitor extends AbstractMonitor
 		zooKeeper.exists(path, this, this, null);
 	}
 
-	private void registerGetDataWatcher() {
+	private void registerGetChildrenWatcher() {
 		if (closed) {
 			return;
 		}
-		zooKeeper.getData(path, this, this, null);
+		zooKeeper.getChildren(path, this, this, null);
 	}
 
-	private void doBusiness(byte[] data) {
-		if (!Arrays.equals(preData, data)) {
-			changed(data);
-			preData = data;
+	private void doBusiness(List<String> children) {
+		if (!CollectionUtils.equals(preChildren, children)) {
+			childrenChanged(children);
+			preChildren = children;
 		}
 	}
 
-	protected abstract void changed(byte[] data);
+	protected abstract void childrenChanged(List<String> children);
 
 }

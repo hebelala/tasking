@@ -17,6 +17,7 @@ package com.github.hebelala.tasking.zookeeper.monitor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.zookeeper.CreateMode;
@@ -32,7 +33,7 @@ import org.junit.runners.MethodSorters;
 import com.github.hebelala.tasking.BaseTest;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class DataMonitorTest extends BaseTest {
+public class ChildrenMonitorTest extends BaseTest {
 
 	private ZkServer zkServer;
 
@@ -52,31 +53,43 @@ public class DataMonitorTest extends BaseTest {
 	public void test_a_normal() throws Exception {
 		ZooKeeper zk = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
-		final AtomicReference<byte[]> myData = new AtomicReference<>(null);
-		DataMonitor dataMonitor = new DataMonitor("/a", null) {
+		final AtomicReference<List<String>> myChildren = new AtomicReference<>(null);
+		ChildrenMonitor childrenMonitor = new ChildrenMonitor("/a", null) {
 			@Override
-			protected void changed(byte[] data) {
-				myData.set(data);
+			protected void childrenChanged(List<String> children) {
+				myChildren.set(children);
 			}
 		};
-		dataMonitor.registerTo(zk);
-		
+		childrenMonitor.registerTo(zk);
+
 		ZooKeeper zk2 = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
 
 		zk2.create("/a", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isEqualTo("".getBytes());
+		assertThat(myChildren.get()).isNotNull().isEmpty();
 
-		zk2.setData("/a", "1".getBytes(), -1);
+		zk2.create("/a/c1", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isEqualTo("1".getBytes());
+		assertThat(myChildren.get()).isNotNull().isNotEmpty().contains("c1");
+
+		zk2.create("/a/c2", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+		Thread.sleep(1000L);
+		assertThat(myChildren.get()).isNotNull().isNotEmpty().contains("c1", "c2");
+
+		zk2.delete("/a/c1", -1);
+		Thread.sleep(1000L);
+		assertThat(myChildren.get()).isNotNull().isNotEmpty().contains("c2");
+
+		zk2.delete("/a/c2", -1);
+		Thread.sleep(1000L);
+		assertThat(myChildren.get()).isNotNull().isEmpty();
 
 		zk2.delete("/a", -1);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isNull();
+		assertThat(myChildren.get()).isNull();
 
-		dataMonitor.close();
+		childrenMonitor.close();
 		zk2.close();
 		zk.close();
 	}
@@ -85,15 +98,15 @@ public class DataMonitorTest extends BaseTest {
 	public void test_b_acl() throws Exception {
 		ZooKeeper zk = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
-		final AtomicReference<byte[]> myData = new AtomicReference<>(null);
-		DataMonitor dataMonitor = new DataMonitor("/a", null) {
+		final AtomicReference<List<String>> myChildren = new AtomicReference<>(null);
+		ChildrenMonitor childrenMonitor = new ChildrenMonitor("/a", null) {
 			@Override
-			protected void changed(byte[] data) {
-				myData.set(data);
+			protected void childrenChanged(List<String> children) {
+				myChildren.set(children);
 			}
 		};
-		dataMonitor.registerTo(zk);
-		
+		childrenMonitor.registerTo(zk);
+
 		ZooKeeper zk2 = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
 
@@ -103,17 +116,17 @@ public class DataMonitorTest extends BaseTest {
 		Thread.sleep(1000L);
 
 		// because no authority, so register watcher failed
-		assertThat(myData.get()).isNull();
+		assertThat(myChildren.get()).isNull();
 
-		zk2.setData("/a", "1".getBytes(), -1);
+		zk2.create("/a/c1", "".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isNull();
+		assertThat(myChildren.get()).isNull();
 
-		zk2.delete("/a", -1);
+		zk2.delete("/a/c1", -1);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isNull();
+		assertThat(myChildren.get()).isNull();
 
-		dataMonitor.close();
+		childrenMonitor.close();
 		zk2.close();
 		zk.close();
 	}
@@ -122,41 +135,54 @@ public class DataMonitorTest extends BaseTest {
 	public void test_c_disconnected() throws Exception {
 		ZooKeeper zk = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
-		final AtomicReference<byte[]> myData = new AtomicReference<>(null);
-		DataMonitor dataMonitor = new DataMonitor("/a", null) {
+		final AtomicReference<List<String>> myChildren = new AtomicReference<>(null);
+		ChildrenMonitor childrenMonitor = new ChildrenMonitor("/a", null) {
 			@Override
-			protected void changed(byte[] data) {
-				myData.set(data);
+			protected void childrenChanged(List<String> children) {
+				myChildren.set(children);
 			}
 		};
-		dataMonitor.registerTo(zk);
-		
+		childrenMonitor.registerTo(zk);
+
 		ZooKeeper zk2 = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
 
 		zkServer.shutdown();
 		Thread.sleep(zkServer.getMinSessionTimeout() / 2);
 		assertThat(zk.getState().isConnected()).isFalse();
-		assertThat(myData.get()).isNull();
+		assertThat(myChildren.get()).isNull();
 
 		zkServer = startZookeeperServer(zkServer.getPort(), false);
 		zk.exists("/", false); // make zk client to connect server right now.
+
 		assertThat(zk.getState().isConnected()).isTrue();
-		assertThat(myData.get()).isNull();
+		assertThat(myChildren.get()).isNull();
 
 		zk2.create("/a", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isEqualTo("".getBytes());
+		assertThat(myChildren.get()).isNotNull().isEmpty();
 
-		zk2.setData("/a", "1".getBytes(), -1);
+		zk2.create("/a/c1", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isEqualTo("1".getBytes());
+		assertThat(myChildren.get()).isNotNull().isNotEmpty().contains("c1");
+
+		zk2.create("/a/c2", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+		Thread.sleep(1000L);
+		assertThat(myChildren.get()).isNotNull().isNotEmpty().contains("c1", "c2");
+
+		zk2.delete("/a/c1", -1);
+		Thread.sleep(1000L);
+		assertThat(myChildren.get()).isNotNull().isNotEmpty().contains("c2");
+
+		zk2.delete("/a/c2", -1);
+		Thread.sleep(1000L);
+		assertThat(myChildren.get()).isNotNull().isEmpty();
 
 		zk2.delete("/a", -1);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isNull();
+		assertThat(myChildren.get()).isNull();
 
-		dataMonitor.close();
+		childrenMonitor.close();
 		zk2.close();
 		zk.close();
 	}

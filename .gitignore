@@ -11,5 +11,8 @@ target
 # zooDataDir for test
 .zooDataDir
 
+# tasking-container logs for test
+tasking-container/logs
+
 # useless
 .DS_Store

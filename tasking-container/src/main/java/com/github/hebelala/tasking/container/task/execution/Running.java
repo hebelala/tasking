@@ -13,24 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.hebelala.tasking.utils;
-
-import java.util.Objects;
+package com.github.hebelala.tasking.container.task.execution;
 
 /**
  * @author hebelala
  */
-public final class StringUtils {
+public class Running {
 
-	public static boolean isBlank(String s) {
-		return s == null || s.trim().isEmpty();
+	private int round;
+	private String threadName;
+
+	public int getRound() {
+		return round;
 	}
 
-	public static boolean isNotBlank(String s) {
-		return s != null && !s.trim().isEmpty();
+	public void setRound(int round) {
+		this.round = round;
 	}
 
-	public static boolean equals(String s, String s2) {
-		return Objects.equals(s, s2);
+	public String getThreadName() {
+		return threadName;
+	}
+
+	public void setThreadName(String threadName) {
+		this.threadName = threadName;
 	}
 }
