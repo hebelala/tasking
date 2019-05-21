@@ -76,16 +76,18 @@ public abstract class TaskingMojo extends AbstractMojo {
 		URLClassLoader appClassLoader = new URLClassLoader(urlList.toArray(new URL[urlList.size()]));
 		try {
 			Enumeration<URL> resources = appClassLoader.findResources("tasking.properties");
-			if (resources == null || !resources.hasMoreElements()) {
-				throw new MojoExecutionException("Cannot find tasking.properties");
-			}
-			int count = 0;
 			URL url = null;
-			while (resources.hasMoreElements()) {
-				if (++count >= 2) {
-					throw new MojoExecutionException("The tasking.properties count cannot exceed 2");
+			if (resources != null) {
+				int count = 0;
+				while (resources.hasMoreElements()) {
+					if (++count >= 2) {
+						throw new MojoExecutionException("The tasking.properties count cannot exceed 2");
+					}
+					url = resources.nextElement();
 				}
-				url = resources.nextElement();
+			}
+			if (url == null) {
+				throw new MojoExecutionException("Cannot find tasking.properties");
 			}
 			InputStream inputStream = url.openStream();
 			try {
