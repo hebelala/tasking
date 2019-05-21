@@ -27,9 +27,7 @@
 	<packaging>pom</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	<description>
-        A tasking framework with simple, scalability, manageability, high availability
-    </description>
+	<description>A tasking framework with simple, scalability, manageability, high availability</description>
 	<url>http://github.com/hebelala/tasking</url>
 	<inceptionYear>2019</inceptionYear>
 
