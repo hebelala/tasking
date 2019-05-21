@@ -6,7 +6,6 @@ jdk:
 
 os:
   - linux
-  - osx
 
 addons:
   sonarcloud:
