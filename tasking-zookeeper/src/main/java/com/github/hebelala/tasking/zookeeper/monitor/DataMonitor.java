@@ -71,6 +71,7 @@ public abstract class DataMonitor extends AbstractMonitor
 				// We don't need to worry about recovering now.
 				// The watch callbacks will kick off any exception handling.
 			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 				return;
 			}
 		case NONODE:

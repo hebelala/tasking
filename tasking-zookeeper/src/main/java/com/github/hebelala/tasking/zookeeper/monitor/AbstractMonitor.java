@@ -23,7 +23,7 @@ import org.apache.zookeeper.ZooKeeper;
 public abstract class AbstractMonitor implements Monitor {
 
 	protected volatile boolean closed;
-	protected volatile ZooKeeper zooKeeper;
+	protected ZooKeeper zooKeeper;
 
 	@Override
 	public void registerTo(ZooKeeper zooKeeper) {

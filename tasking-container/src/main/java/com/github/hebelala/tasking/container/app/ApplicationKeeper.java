@@ -46,7 +46,7 @@ public class ApplicationKeeper {
 	private TaskingProperties taskingProperties;
 	private Object application;
 	private TaskingZookeeper taskingZookeeper;
-	private volatile TasksMonitor tasksMonitor;
+	private TasksMonitor tasksMonitor;
 	private Map<String, TaskKeeper> taskKeeperMap = new HashMap<>();
 
 	public ApplicationKeeper(Server server, URLClassLoader appClassloader) throws ClassNotFoundException, IOException,
@@ -124,7 +124,7 @@ public class ApplicationKeeper {
 					return;
 				}
 				if (CollectionUtils.isNotBlank(children)) {
-					children.forEach((task) -> {
+					children.forEach(task -> {
 						if (!taskKeeperMap.containsKey(task)) {
 							TaskKeeper taskKeeper = new TaskKeeper(server, taskingProperties.getNamespace(), task,
 									taskingZookeeper, application);

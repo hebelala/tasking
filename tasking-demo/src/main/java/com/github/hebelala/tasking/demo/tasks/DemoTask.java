@@ -33,31 +33,29 @@ import javax.annotation.PostConstruct;
 @Component
 public class DemoTask implements Task {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Autowired
-    private CustomerRepository customerRepository;
+	@Autowired
+	private CustomerRepository customerRepository;
 
-    @PostConstruct
-    public void init() {
-        Customer customer = new Customer();
-        customer.setName("hebe");
-        Customer save = customerRepository.save(customer);
-        logger.info("Saved: {}:{}", save.getId(), save.getName());
-    }
+	@PostConstruct
+	public void init() {
+		Customer customer = new Customer();
+		customer.setName("hebe");
+		Customer save = customerRepository.save(customer);
+		logger.info("Saved: {}:{}", save.getId(), save.getName());
+	}
 
-    @Override
-    public Response run(Request request) {
-        logger.info("request is {} ", request);
+	@Override
+	public Response run(Request request) {
+		logger.info("request is {} ", request);
 
-        customerRepository
-                .findAll()
-                .forEach((val) -> logger.info("id:name is ", val.getId(), val.getName()));
-        return new Response();
-    }
+		customerRepository.findAll().forEach(val -> logger.info("id:name is ", val.getId(), val.getName()));
+		return new Response();
+	}
 
-    @Override
-    public String getVersion() {
-        return "1.0.0";
-    }
+	@Override
+	public String getVersion() {
+		return "1.0.0";
+	}
 }

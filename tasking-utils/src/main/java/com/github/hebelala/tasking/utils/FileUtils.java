@@ -91,8 +91,9 @@ public final class FileUtils {
 	}
 
 	public static void unzipToDirectory(File file, File directory) throws IOException {
-		ZipFile zipFile = new ZipFile(file);
+		ZipFile zipFile = null;
 		try {
+			zipFile = new ZipFile(file);
 			Enumeration<? extends ZipEntry> entries = zipFile.entries();
 			while (entries.hasMoreElements()) {
 				ZipEntry zipEntry = entries.nextElement();
@@ -105,22 +106,24 @@ public final class FileUtils {
 					if (!parentFile.exists()) {
 						parentFile.mkdirs();
 					}
-					BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-					BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(temp));
+					BufferedInputStream bis = null;
+					BufferedOutputStream bos = null;
 					try {
+						bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+						bos = new BufferedOutputStream(new FileOutputStream(temp));
 						int len;
 						byte[] bs = new byte[2048];
 						while ((len = bis.read(bs)) != -1) {
 							bos.write(bs, 0, len);
 						}
 					} finally {
-						bis.close();
-						bos.close();
+						CloseableUtils.closeQuietly(bis);
+						CloseableUtils.closeQuietly(bos);
 					}
 				}
 			}
 		} finally {
-			zipFile.close();
+			CloseableUtils.closeQuietly(zipFile);
 		}
 	}
 
@@ -156,15 +159,16 @@ public final class FileUtils {
 			}
 		} else {
 			zos.putNextEntry(new ZipEntry(zipEntryName0));
-			FileInputStream fis = new FileInputStream(file);
+			FileInputStream fis = null;
 			try {
+				fis = new FileInputStream(file);
 				int len;
 				byte[] bs = new byte[2048];
 				while ((len = fis.read(bs)) != -1) {
 					zos.write(bs, 0, len);
 				}
 			} finally {
-				fis.close();
+				CloseableUtils.closeQuietly(fis);
 			}
 		}
 	}

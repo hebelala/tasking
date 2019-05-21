@@ -25,7 +25,7 @@ import com.github.hebelala.tasking.api.Task;
  */
 public abstract class AbstractSpringApplication implements Application {
 
-	protected volatile ApplicationContext applicationContext;
+	protected ApplicationContext applicationContext;
 
 	@Override
 	public Task getTask(Class<? extends Task> taskClass) {

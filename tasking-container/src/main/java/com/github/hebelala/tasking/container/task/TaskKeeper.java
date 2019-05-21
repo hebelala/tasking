@@ -115,6 +115,7 @@ public class TaskKeeper {
 			try {
 				scheduledExecutorService.awaitTermination(3, TimeUnit.SECONDS);
 			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 				return;
 			}
 
@@ -186,7 +187,9 @@ public class TaskKeeper {
 				try {
 					taskingZookeeper.multi(Op.create(completedPath, gson.toJson(completed).getBytes("utf-8"),
 							ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT), Op.delete(runningPath, -1));
-				} catch (UnsupportedEncodingException | InterruptedException e) {
+				} catch (UnsupportedEncodingException e) {
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
 				}
 			}
 		}

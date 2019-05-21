@@ -51,7 +51,7 @@ public class TaskingZookeeper implements Watcher {
 	private Listener listener;
 	private volatile ZooKeeper zooKeeper;
 	private volatile Thread eventThread;
-	private volatile RetryForever retryForever;
+	private RetryForever retryForever;
 
 	private Thread restartThread;
 	private volatile boolean shouldRestart;
@@ -92,6 +92,7 @@ public class TaskingZookeeper implements Watcher {
 				try {
 					Thread.sleep(100L);
 				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
 					return;
 				}
 			}
@@ -104,11 +105,11 @@ public class TaskingZookeeper implements Watcher {
 						if (listener != null) {
 							listener.beforeCloseZooKeeper();
 						}
-						retryForever.close();
 						zooKeeper.close();
 						blockUntilEventThreadIsNotAlive();
 						start0();
 					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
 						return;
 					} catch (Throwable t) {
 						logger.error(t.getMessage(), t);
@@ -117,6 +118,7 @@ public class TaskingZookeeper implements Watcher {
 					try {
 						Thread.sleep(1000L);
 					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
 						return;
 					}
 				}
@@ -124,18 +126,21 @@ public class TaskingZookeeper implements Watcher {
 
 		}, "tasking-zk-restart");
 		restartThread.start();
+		retryForever = new RetryForever();
 		start0();
 		started.set(true);
 	}
 
 	private void blockUntilEventThreadIsNotAlive() throws InterruptedException {
+		if (Thread.currentThread() == eventThread) {
+			return;
+		}
 		while (eventThread != null && eventThread.isAlive()) {
 			Thread.sleep(100L);
 		}
 	}
 
 	private void start0() throws IOException {
-		retryForever = new RetryForever();
 		zooKeeper = new ZooKeeper(connectString + "/" + namespace, sessionTimeout, this);
 		zooKeeper.addAuthInfo("digest",
 				new StringBuilder().append(username).append(':').append(password).toString().getBytes("utf-8"));
@@ -224,7 +229,6 @@ public class TaskingZookeeper implements Watcher {
 				try {
 					zooKeeper.delete(path, -1);
 				} catch (KeeperException.NoNodeException e) {
-					return;
 				} catch (KeeperException.NotEmptyException e) {
 					List<String> children = zooKeeper.getChildren(path, false);
 					for (String child : children) {

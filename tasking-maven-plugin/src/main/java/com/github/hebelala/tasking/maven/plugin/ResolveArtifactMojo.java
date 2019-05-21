@@ -62,7 +62,7 @@ public abstract class ResolveArtifactMojo extends TaskingMojo {
 		coordinate.setType(type);
 		coordinate.setClassifier(classifier);
 
-		List<ArtifactRepository> repoList = new ArrayList<ArtifactRepository>();
+		List<ArtifactRepository> repoList = new ArrayList<>();
 
 		if (pomRemoteRepositories != null) {
 			repoList.addAll(pomRemoteRepositories);
