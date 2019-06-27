@@ -26,7 +26,7 @@ public class TaskConfig {
 
 	private String name;
 	private String clazz;
-	private int type; // 0: oneShort; 1: atFixedRate; 2: withFixedDelay
+	private String type; // see TaskType
 	private long initialDelay;
 	private long delay;
 	private long timeout;
@@ -49,11 +49,11 @@ public class TaskConfig {
 		this.clazz = clazz;
 	}
 
-	public int getType() {
+	public String getType() {
 		return type;
 	}
 
-	public void setType(int type) {
+	public void setType(String type) {
 		this.type = type;
 	}
 

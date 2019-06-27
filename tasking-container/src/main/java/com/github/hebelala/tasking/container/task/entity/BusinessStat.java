@@ -13,29 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.hebelala.tasking.container.task.execution;
+package com.github.hebelala.tasking.container.task.entity;
 
 /**
  * @author hebelala
  */
-public class Running {
+public enum BusinessStat {
 
-	private int round;
-	private String threadName;
+    BZ_RUNNING, BZ_COMPLETED
 
-	public int getRound() {
-		return round;
-	}
-
-	public void setRound(int round) {
-		this.round = round;
-	}
-
-	public String getThreadName() {
-		return threadName;
-	}
-
-	public void setThreadName(String threadName) {
-		this.threadName = threadName;
-	}
 }

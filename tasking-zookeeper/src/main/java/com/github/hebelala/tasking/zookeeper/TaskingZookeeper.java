@@ -15,26 +15,18 @@
  */
 package com.github.hebelala.tasking.zookeeper;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.Op;
-import org.apache.zookeeper.OpResult;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.ZooKeeper;
+import com.github.hebelala.tasking.zookeeper.monitor.Monitor;
+import com.github.hebelala.tasking.zookeeper.retry.Callback;
+import com.github.hebelala.tasking.zookeeper.retry.RetryForever;
+import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.hebelala.tasking.zookeeper.monitor.Monitor;
-import com.github.hebelala.tasking.zookeeper.retry.Callback;
-import com.github.hebelala.tasking.zookeeper.retry.RetryForever;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author hebelala
@@ -187,6 +179,9 @@ public class TaskingZookeeper implements Watcher {
 		monitor.registerTo(zooKeeper);
 	}
 
+	/**
+	 * Create path with data and CreateMode, return null when NodeExists.
+	 */
 	public String create(String path, String data, CreateMode createMode) throws InterruptedException {
 		return retryForever.call(() -> {
 			try {
@@ -214,6 +209,24 @@ public class TaskingZookeeper implements Watcher {
 				return data == null ? null : new String(data, "utf-8");
 			} catch (KeeperException.NoNodeException e) {
 				return null;
+			}
+		});
+	}
+
+	/**
+	 * Update data with version. return false when NoNode or BadVersion.
+	 */
+	public boolean update(String path, String data, int version) throws InterruptedException {
+		return retryForever.call(() -> {
+			try {
+				zooKeeper.setData(path, data.getBytes("utf-8"), version);
+				return true;
+			} catch (KeeperException.NoNodeException e) {
+				logger.warn("Update path failed with NoNodeException, path:{}, version:{}", path, version);
+				return false;
+			} catch (KeeperException.BadVersionException e) {
+				logger.warn("Update path failed with BadVersionException, path:{}, version:{}", path, version);
+				return false;
 			}
 		});
 	}
