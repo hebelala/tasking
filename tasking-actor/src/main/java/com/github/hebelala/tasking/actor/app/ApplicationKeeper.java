@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.hebelala.tasking.container.app;
+package com.github.hebelala.tasking.actor.app;
 
 import java.io.IOException;
 import java.net.URLClassLoader;
@@ -25,8 +25,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.hebelala.tasking.container.Server;
-import com.github.hebelala.tasking.container.task.TaskKeeper;
+import com.github.hebelala.tasking.actor.entity.Actor;
+import com.github.hebelala.tasking.actor.task.TaskKeeper;
 import com.github.hebelala.tasking.utils.CollectionUtils;
 import com.github.hebelala.tasking.zookeeper.TaskingZookeeper;
 import com.github.hebelala.tasking.zookeeper.monitor.ChildrenMonitor;
@@ -41,7 +41,7 @@ public class ApplicationKeeper {
 	private volatile boolean closed;
 	private Object lock = new Object();
 
-	private Server server;
+	private Actor actor;
 	private URLClassLoader appClassloader;
 	private TaskingProperties taskingProperties;
 	private Object application;
@@ -49,14 +49,20 @@ public class ApplicationKeeper {
 	private TasksMonitor tasksMonitor;
 	private Map<String, TaskKeeper> taskKeeperMap = new HashMap<>();
 
-	public ApplicationKeeper(Server server, URLClassLoader appClassloader) throws ClassNotFoundException, IOException,
+	public ApplicationKeeper(Actor actor, URLClassLoader appClassloader) throws ClassNotFoundException, IOException,
 			InstantiationException, InterruptedException, IllegalAccessException {
 		try {
-			this.server = server;
+			this.actor = actor;
 			this.appClassloader = appClassloader;
 			taskingProperties = TaskingProperties.Loader.load(appClassloader);
 
-			application = appClassloader.loadClass(taskingProperties.getApp()).newInstance();
+			ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+			try {
+				Thread.currentThread().setContextClassLoader(appClassloader);
+				application = appClassloader.loadClass(taskingProperties.getApp()).newInstance();
+			} finally {
+				Thread.currentThread().setContextClassLoader(contextClassLoader);
+			}
 
 			taskingZookeeper = new TaskingZookeeper(taskingProperties.getConnectString(),
 					Integer.parseInt(taskingProperties.getSessionTimeout()), taskingProperties.getNamespace(),
@@ -126,7 +132,7 @@ public class ApplicationKeeper {
 				if (CollectionUtils.isNotBlank(children)) {
 					children.forEach(task -> {
 						if (!taskKeeperMap.containsKey(task)) {
-							TaskKeeper taskKeeper = new TaskKeeper(server, taskingProperties.getNamespace(), task,
+							TaskKeeper taskKeeper = new TaskKeeper(actor, taskingProperties.getNamespace(), task,
 									taskingZookeeper, application);
 							taskKeeperMap.put(task, taskKeeper);
 						}

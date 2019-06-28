@@ -16,7 +16,11 @@
 package com.github.hebelala.tasking.maven.plugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
@@ -64,24 +68,27 @@ public class RunMojo extends ResolveArtifactMojo {
 			validateAndGetPackaging();
 			String taskingApiVersion = validateAndGetTaskingApiVersion();
 
-			// If tasking-api is SNAPSHOT, or the cache is not existing, then download
-			// tasking-container
-			// and cover it to cache.
-			File tcFileCached = new File(cachesDir, "tasking-container-" + taskingApiVersion);
-			if (taskingApiVersion.toUpperCase().endsWith("SNAPSHOT") || !tcFileCached.exists()) {
-				File tcFile = resolveArtifact("com.github.hebelala", "tasking-container", taskingApiVersion, "zip",
-						"zip");
-				FileUtils.delete(tcFileCached);
+			/*
+			 * If tasking-api is SNAPSHOT, or the cache is not existing, then download
+			 * tasking-actor and cover it to cache.
+			 */
+			File taFileCached = new File(cachesDir, "tasking-actor-" + taskingApiVersion);
+			if (taskingApiVersion.toUpperCase().endsWith("SNAPSHOT") || !taFileCached.exists()) {
+				File taFile = resolveArtifact("com.github.hebelala", "tasking-actor", taskingApiVersion, "zip", "zip");
+				FileUtils.delete(taFileCached);
 
-				FileUtils.unzipToDirectory(tcFile, cachesDir);
+				FileUtils.unzipToDirectory(taFile, cachesDir);
 			}
 
 			// Delete apps, because it has children with ran before.
-			File appsFile = new File(tcFileCached, "apps");
+			File appsFile = new File(taFileCached, "apps");
 			FileUtils.delete(appsFile);
 
 			// Deploy the current project app to apps
 			deployApp(appsFile);
+
+			// Start tasking-actor
+			startActor(taFileCached, taskingApiVersion);
 		} catch (MojoExecutionException e) {
 			throw e;
 		} catch (Exception e) {
@@ -90,6 +97,22 @@ public class RunMojo extends ResolveArtifactMojo {
 		} finally {
 			CloseableUtils.closeQuietly(fileLock);
 			CloseableUtils.closeQuietly(randomAccessFile);
+		}
+	}
+
+	private void startActor(File taFileCached, String taskingApiVersion)
+			throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+			NoSuchMethodException, SecurityException, IOException {
+		File taLib = new File(taFileCached, "lib");
+		File taJar = new File(taLib, "tasking-actor-" + taskingApiVersion + ".jar");
+		URLClassLoader urlClassLoader = new URLClassLoader(new URL[] { taJar.toURI().toURL() });
+		try {
+			System.setProperty("tasking.log.appender", "Console");
+			Class<?> mainClass = urlClassLoader.loadClass("com.github.hebelala.tasking.actor.Main");
+			mainClass.getDeclaredMethod("main", String[].class).invoke(null, new Object[] { new String[0] });
+		} finally {
+			urlClassLoader.close();
+			System.clearProperty("tasking.log.appender");
 		}
 	}
 

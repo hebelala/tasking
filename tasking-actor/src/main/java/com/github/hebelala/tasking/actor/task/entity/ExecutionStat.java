@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.hebelala.tasking.container;
+package com.github.hebelala.tasking.actor.task.entity;
 
 /**
  * @author hebelala
  */
-public class Main {
+public enum ExecutionStat {
 
-	public static void main(String[] args) throws Exception {
-		new Container().start();
-	}
+    RUNNING, BZ_RUNNING, BZ_COMPLETED, SUCCESSFUL, FAILED, INTERRUPTED, TIMEOUT;
+
 }

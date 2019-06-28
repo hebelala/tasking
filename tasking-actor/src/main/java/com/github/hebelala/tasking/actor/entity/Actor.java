@@ -13,41 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.hebelala.tasking.container.task.entity;
-
-import com.github.hebelala.tasking.container.Server;
+package com.github.hebelala.tasking.actor.entity;
 
 /**
  * @author hebelala
  */
-public class Execution {
+public class Actor {
 
-	private Server server;
-	private Status status;
-	private Business business;
+	private String hostAddress;
+	private String hostName;
+	private long startTime;
 
-	public Server getServer() {
-		return server;
+	public String getHostAddress() {
+		return hostAddress;
 	}
 
-	public void setServer(Server server) {
-		this.server = server;
+	public void setHostAddress(String hostAddress) {
+		this.hostAddress = hostAddress;
 	}
 
-	public Status getStatus() {
-		return status;
+	public String getHostName() {
+		return hostName;
 	}
 
-	public void setStatus(Status status) {
-		this.status = status;
+	public void setHostName(String hostName) {
+		this.hostName = hostName;
 	}
 
-	public Business getBusiness() {
-		return business;
+	public long getStartTime() {
+		return startTime;
 	}
 
-	public void setBusiness(Business business) {
-		this.business = business;
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
 	}
-
 }

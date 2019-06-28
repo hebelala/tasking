@@ -35,6 +35,7 @@ import com.github.hebelala.tasking.utils.FileUtils;
 @Mojo(name = "zip", requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class ZipMojo extends TaskingMojo {
 
+	private static final String CLASSIFIER = "tasking";
 	private static final String TYPE = "zip";
 
 	@Component
@@ -71,10 +72,10 @@ public class ZipMojo extends TaskingMojo {
 
 			// zip
 			File file = new File(project.getBuild().getDirectory(),
-					String.format("%s.%s", project.getBuild().getFinalName(), TYPE));
+					String.format("%s-%s.%s", project.getBuild().getFinalName(), CLASSIFIER, TYPE));
 			FileUtils.zipToFile(appFileList, file, namespace);
 
-			projectHelper.attachArtifact(project, TYPE, file);
+			projectHelper.attachArtifact(project, TYPE, CLASSIFIER, file);
 		} catch (MojoExecutionException e) {
 			throw e;
 		} catch (Exception e) {

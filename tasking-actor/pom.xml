@@ -24,7 +24,7 @@
 		<artifactId>tasking</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	<artifactId>tasking-container</artifactId>
+	<artifactId>tasking-actor</artifactId>
 
 	<dependencies>
 		<dependency>
@@ -70,8 +70,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>com.github.hebelala.tasking.container.Main</mainClass>
-							<classpathPrefix>lib/</classpathPrefix>
+							<mainClass>com.github.hebelala.tasking.actor.Main</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

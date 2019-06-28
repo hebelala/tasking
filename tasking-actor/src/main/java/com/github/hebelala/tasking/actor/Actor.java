@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.hebelala.tasking.container;
+package com.github.hebelala.tasking.actor;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -31,7 +31,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.hebelala.tasking.container.app.ApplicationKeeper;
+import com.github.hebelala.tasking.actor.app.ApplicationKeeper;
 import com.github.hebelala.tasking.utils.CloseableUtils;
 
 /**
@@ -39,26 +39,40 @@ import com.github.hebelala.tasking.utils.CloseableUtils;
  *
  * @author hebelala
  */
-public class Container {
+public class Actor {
 
 	private Logger logger;
 
-	private Server server;
+	private com.github.hebelala.tasking.actor.entity.Actor actor;
+	private ClassLoader actorClassLoader;
 	private Map<String, URLClassLoader> appClassloaderMap = new HashMap<>();
 	private Map<String, ApplicationKeeper> applicationKeeperMap = new HashMap<>();
 
-	public void start() throws Exception {
-		File libFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+	public static void main(String[] args) throws Exception {
+		new Actor().start();
+	}
 
-		setEnv(libFile);
-		initLog();
-		initServer();
-		initAppClassLoaders(libFile);
-		initApplications();
+	public void start() throws Exception {
+		actorClassLoader = getClass().getClassLoader();
+		ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			Thread.currentThread().setContextClassLoader(actorClassLoader);
+
+			File taJar = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+			File libFile = taJar.getParentFile();
+
+			setEnv(libFile);
+			initLog();
+			initActorEntity();
+			initAppClassLoaders(libFile);
+			initApplications();
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldClassLoader);
+		}
 	}
 
 	private void setEnv(File libFile) {
-		File logsFile = new File(libFile.getParentFile().getParent(), "logs");
+		File logsFile = new File(libFile.getParent(), "logs");
 		System.setProperty("tasking.log.dir", logsFile.getAbsolutePath());
 	}
 
@@ -66,8 +80,8 @@ public class Container {
 		logger = LoggerFactory.getLogger(getClass());
 	}
 
-	private void initServer() throws Exception {
-		server = new Server();
+	private void initActorEntity() throws Exception {
+		actor = new com.github.hebelala.tasking.actor.entity.Actor();
 
 		Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
 		if (networkInterfaces == null) {
@@ -81,8 +95,8 @@ public class Container {
 				while (inetAddresses.hasMoreElements()) {
 					InetAddress inetAddress = inetAddresses.nextElement();
 					if (inetAddress.isSiteLocalAddress()) {
-						server.setHostAddress(inetAddress.getHostAddress());
-						server.setHostName(inetAddress.getHostName());
+						actor.setHostAddress(inetAddress.getHostAddress());
+						actor.setHostName(inetAddress.getHostName());
 						find = true;
 						break outer;
 					}
@@ -93,7 +107,7 @@ public class Container {
 			throw new Exception("Cannot find any SiteLocalAddress");
 		}
 
-		server.setStartTime(System.currentTimeMillis());
+		actor.setStartTime(System.currentTimeMillis());
 	}
 
 	private void initAppClassLoaders(File libFile) throws MalformedURLException {
@@ -113,8 +127,8 @@ public class Container {
 								appUrlList.add(temp.toURI().toURL());
 							}
 						}
-						appClassloaderMap.put(namespace,
-								new URLClassLoader(appUrlList.toArray(new URL[appUrlList.size()])));
+						appClassloaderMap.put(namespace, new URLClassLoader(
+								appUrlList.toArray(new URL[appUrlList.size()]), actorClassLoader.getParent()));
 					}
 				}
 			}
@@ -130,7 +144,7 @@ public class Container {
 			String namespace = next.getKey();
 			URLClassLoader appClassLoader = next.getValue();
 			try {
-				ApplicationKeeper applicationKeeper = new ApplicationKeeper(server, appClassLoader);
+				ApplicationKeeper applicationKeeper = new ApplicationKeeper(actor, appClassLoader);
 				applicationKeeperMap.put(namespace, applicationKeeper);
 			} catch (Throwable t) {
 				logger.error(String.format("Init Application failed, its namespace is %s", namespace), t);

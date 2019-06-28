@@ -13,13 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.hebelala.tasking.container.task.entity;
+package com.github.hebelala.tasking.actor.task.entity;
 
 /**
  * @author hebelala
  */
-public enum BusinessStat {
+public class Status {
 
-    BZ_RUNNING, BZ_COMPLETED
+    private int round;
+    private String state; // see ExecutionStat
+    private String message; // exception, etc
+
+    public int getRound() {
+        return round;
+    }
+
+    public void setRound(int round) {
+        this.round = round;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
 }

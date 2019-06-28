@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.hebelala.tasking.container.app;
+package com.github.hebelala.tasking.actor.app;
 
 import java.io.InputStream;
 import java.net.URL;

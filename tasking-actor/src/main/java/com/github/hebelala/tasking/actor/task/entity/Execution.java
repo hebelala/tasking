@@ -13,13 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.hebelala.tasking.container.task.entity;
+package com.github.hebelala.tasking.actor.task.entity;
+
+import com.github.hebelala.tasking.actor.entity.Actor;
 
 /**
  * @author hebelala
  */
-public enum TaskType {
+public class Execution {
 
-    ONE_SHORT, AT_FIXED_RATE, WITH_FIXED_DELAY;
+	private Actor actor;
+	private Status status;
+	private Business business;
+
+	public Actor getActor() {
+		return actor;
+	}
+
+	public void setActor(Actor actor) {
+		this.actor = actor;
+	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+
+	public Business getBusiness() {
+		return business;
+	}
+
+	public void setBusiness(Business business) {
+		this.business = business;
+	}
 
 }

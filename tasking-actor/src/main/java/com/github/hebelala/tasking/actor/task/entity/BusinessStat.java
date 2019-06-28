@@ -13,38 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.hebelala.tasking.container;
+package com.github.hebelala.tasking.actor.task.entity;
 
 /**
  * @author hebelala
  */
-public class Server {
+public enum BusinessStat {
 
-	private String hostAddress;
-	private String hostName;
-	private long startTime;
+    BZ_RUNNING, BZ_COMPLETED
 
-	public String getHostAddress() {
-		return hostAddress;
-	}
-
-	public void setHostAddress(String hostAddress) {
-		this.hostAddress = hostAddress;
-	}
-
-	public String getHostName() {
-		return hostName;
-	}
-
-	public void setHostName(String hostName) {
-		this.hostName = hostName;
-	}
-
-	public long getStartTime() {
-		return startTime;
-	}
-
-	public void setStartTime(long startTime) {
-		this.startTime = startTime;
-	}
 }

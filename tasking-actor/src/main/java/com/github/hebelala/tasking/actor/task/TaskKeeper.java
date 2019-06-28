@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.hebelala.tasking.container.task;
+package com.github.hebelala.tasking.actor.task;
 
-import static com.github.hebelala.tasking.container.task.entity.ExecutionStat.BZ_COMPLETED;
-import static com.github.hebelala.tasking.container.task.entity.ExecutionStat.BZ_RUNNING;
-import static com.github.hebelala.tasking.container.task.entity.ExecutionStat.FAILED;
-import static com.github.hebelala.tasking.container.task.entity.ExecutionStat.INTERRUPTED;
-import static com.github.hebelala.tasking.container.task.entity.ExecutionStat.RUNNING;
-import static com.github.hebelala.tasking.container.task.entity.ExecutionStat.SUCCESSFUL;
-import static com.github.hebelala.tasking.container.task.entity.ExecutionStat.TIMEOUT;
+import static com.github.hebelala.tasking.actor.task.entity.ExecutionStat.BZ_COMPLETED;
+import static com.github.hebelala.tasking.actor.task.entity.ExecutionStat.BZ_RUNNING;
+import static com.github.hebelala.tasking.actor.task.entity.ExecutionStat.FAILED;
+import static com.github.hebelala.tasking.actor.task.entity.ExecutionStat.INTERRUPTED;
+import static com.github.hebelala.tasking.actor.task.entity.ExecutionStat.RUNNING;
+import static com.github.hebelala.tasking.actor.task.entity.ExecutionStat.SUCCESSFUL;
+import static com.github.hebelala.tasking.actor.task.entity.ExecutionStat.TIMEOUT;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
@@ -38,13 +38,13 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.hebelala.tasking.actor.entity.Actor;
+import com.github.hebelala.tasking.actor.task.entity.Business;
+import com.github.hebelala.tasking.actor.task.entity.Execution;
+import com.github.hebelala.tasking.actor.task.entity.ExecutionStat;
+import com.github.hebelala.tasking.actor.task.entity.Status;
+import com.github.hebelala.tasking.actor.task.entity.TaskType;
 import com.github.hebelala.tasking.api.Response;
-import com.github.hebelala.tasking.container.Server;
-import com.github.hebelala.tasking.container.task.entity.Business;
-import com.github.hebelala.tasking.container.task.entity.Execution;
-import com.github.hebelala.tasking.container.task.entity.ExecutionStat;
-import com.github.hebelala.tasking.container.task.entity.Status;
-import com.github.hebelala.tasking.container.task.entity.TaskType;
 import com.github.hebelala.tasking.zookeeper.TaskingZookeeper;
 import com.github.hebelala.tasking.zookeeper.monitor.DataMonitor;
 import com.google.gson.Gson;
@@ -57,7 +57,7 @@ public class TaskKeeper {
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-	private Server server;
+	private Actor actor;
 	private String namespace;
 	private String name;
 	private TaskingZookeeper taskingZookeeper;
@@ -72,9 +72,9 @@ public class TaskKeeper {
 
 	private Gson gson = new Gson();
 
-	public TaskKeeper(Server server, String namespace, String name, TaskingZookeeper taskingZookeeper,
+	public TaskKeeper(Actor actor, String namespace, String name, TaskingZookeeper taskingZookeeper,
 			Object application) {
-		this.server = server;
+		this.actor = actor;
 		this.namespace = namespace;
 		this.name = name;
 		this.taskingZookeeper = taskingZookeeper;
@@ -344,7 +344,7 @@ public class TaskKeeper {
 
 			private Execution createExecution() {
 				Execution execution = new Execution();
-				execution.setServer(server);
+				execution.setActor(actor);
 
 				Status status = new Status();
 				status.setState(executionStat.get().name()); // running
@@ -363,7 +363,7 @@ public class TaskKeeper {
 					if (executionDataStr == null) { // The path is not existing
 						String createResult = taskingZookeeper.create(executionPath, gson.toJson(execution),
 								CreateMode.PERSISTENT);
-						if (createResult == null) { // Created by other server, sleep and retry
+						if (createResult == null) { // Created by other actor, sleep and retry
 							Thread.sleep(500L);
 						} else { // Created by me
 							stat = taskingZookeeper.exists(executionPath);
@@ -374,7 +374,7 @@ public class TaskKeeper {
 						}
 					} else {
 						Execution lastExecution = gson.fromJson(executionDataStr, Execution.class);
-						if ("running".equals(lastExecution.getStatus().getState())) { // It's running at other server
+						if ("running".equals(lastExecution.getStatus().getState())) { // It's running at other actor
 							Thread.sleep(500L);
 						} else {
 							execution.getStatus().setRound(lastExecution.getStatus().getRound() + 1);
