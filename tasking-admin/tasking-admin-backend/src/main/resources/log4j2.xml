@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright © 2019 hebelala (hebelala@qq.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<Configuration status="WARN">
+	<Properties>
+		<Property name="dir">${sys:tasking.log.dir:-logs}</Property>
+		<Property name="pattern">[%d{DEFAULT}][%level][%thread][%logger] >> %msg%n</Property>
+	</Properties>
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout charset="UTF-8" pattern="${pattern}" />
+		</Console>
+		<RollingRandomAccessFile name="File" fileName="${dir}/tasking-admin.log" filePattern="${dir}/tasking-admin-%i.log">
+			<PatternLayout charset="UTF-8" pattern="${pattern}" />
+			<Policies>
+				<SizeBasedTriggeringPolicy size="100MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="50" />
+		</RollingRandomAccessFile>
+	</Appenders>
+	<Loggers>
+		<Root level="info">
+			<AppenderRef ref="${sys:tasking.log.appender:-File}" />
+		</Root>
+	</Loggers>
+</Configuration>

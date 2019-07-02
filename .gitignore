@@ -13,3 +13,6 @@ target
 
 # useless
 .DS_Store
+
+# logs for tasking-admin
+tasking-admin/tasking-admin-backend/logs
