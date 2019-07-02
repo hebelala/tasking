@@ -13,9 +13,6 @@ os:
   - linux
 
 addons:
-  apt:
-    packages:
-      - oracle-java8-installer
   sonarcloud:
     organization: "hebelala-github"
 
