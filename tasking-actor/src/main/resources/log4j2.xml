@@ -34,7 +34,7 @@
 		</RollingRandomAccessFile>
 	</Appenders>
 	<Loggers>
-		<Root level="info">
+		<Root level="${sys:tasking.log.level:-info}">
 			<AppenderRef ref="${sys:tasking.log.appender:-File}" />
 		</Root>
 	</Loggers>
