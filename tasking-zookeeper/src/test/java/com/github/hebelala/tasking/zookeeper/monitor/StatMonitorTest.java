@@ -15,7 +15,8 @@
  */
 package com.github.hebelala.tasking.zookeeper.monitor;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -23,25 +24,26 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.server.ZkServer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import com.github.hebelala.tasking.BaseTest;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(OrderAnnotation.class)
 public class StatMonitorTest extends BaseTest {
 
 	private ZkServer zkServer;
 
-	@Before
+	@BeforeEach
 	public void before() throws Exception {
 		zkServer = startZookeeperServer(2181, true);
 	}
 
-	@After
+	@AfterEach
 	public void after() {
 		if (zkServer != null) {
 			zkServer.shutdown();
@@ -49,7 +51,8 @@ public class StatMonitorTest extends BaseTest {
 	}
 
 	@Test
-	public void test_a_normal() throws Exception {
+	@Order(1)
+	public void testNormal() throws Exception {
 		ZooKeeper zk = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
 		final AtomicBoolean stat = new AtomicBoolean(false);
@@ -72,19 +75,19 @@ public class StatMonitorTest extends BaseTest {
 
 		zk2.create("/a", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		Thread.sleep(1000L);
-		assertThat(stat.get()).isTrue();
+		assertTrue(stat.get());
 
 		zk2.setData("/a", "1".getBytes(), -1);
 		Thread.sleep(1000L);
-		assertThat(stat.get()).isTrue();
+		assertTrue(stat.get());
 
 		zk2.delete("/a", -1);
 		Thread.sleep(1000L);
-		assertThat(stat.get()).isFalse();
+		assertFalse(stat.get());
 
 		zk2.create("/a", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		Thread.sleep(1000L);
-		assertThat(stat.get()).isTrue();
+		assertTrue(stat.get());
 
 		statMonitor.close();
 		zk2.close();
@@ -92,7 +95,8 @@ public class StatMonitorTest extends BaseTest {
 	}
 
 	@Test
-	public void test_b_acl() throws Exception {
+	@Order(2)
+	public void testAcl() throws Exception {
 		ZooKeeper zk = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
 		final AtomicBoolean stat = new AtomicBoolean(false);
@@ -116,15 +120,15 @@ public class StatMonitorTest extends BaseTest {
 		zk2.addAuthInfo("digest", "admin:123".getBytes());
 		zk2.create("/a", "".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
 		Thread.sleep(1000L);
-		assertThat(stat.get()).isTrue();
+		assertTrue(stat.get());
 
 		zk2.setData("/a", "1".getBytes(), -1);
 		Thread.sleep(1000L);
-		assertThat(stat.get()).isTrue();
+		assertTrue(stat.get());
 
 		zk2.delete("/a", -1);
 		Thread.sleep(1000L);
-		assertThat(stat.get()).isFalse();
+		assertFalse(stat.get());
 
 		statMonitor.close();
 		zk2.close();
@@ -132,7 +136,8 @@ public class StatMonitorTest extends BaseTest {
 	}
 
 	@Test
-	public void test_c_disconnected() throws Exception {
+	@Order(3)
+	public void testDisconnected() throws Exception {
 		ZooKeeper zk = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
 		final AtomicBoolean stat = new AtomicBoolean(false);
@@ -155,25 +160,25 @@ public class StatMonitorTest extends BaseTest {
 
 		zkServer.shutdown();
 		Thread.sleep(zkServer.getMinSessionTimeout() / 2);
-		assertThat(zk.getState().isConnected()).isFalse();
-		assertThat(stat.get()).isFalse();
+		assertFalse(zk.getState().isConnected());
+		assertFalse(stat.get());
 
 		zkServer = startZookeeperServer(zkServer.getPort(), false);
 		zk.exists("/", false); // make zk client to connect server right now.
-		assertThat(zk.getState().isConnected()).isTrue();
-		assertThat(stat.get()).isFalse();
+		assertTrue(zk.getState().isConnected());
+		assertFalse(stat.get());
 
 		zk2.create("/a", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		Thread.sleep(1000L);
-		assertThat(stat.get()).isTrue();
+		assertTrue(stat.get());
 
 		zk2.setData("/a", "1".getBytes(), -1);
 		Thread.sleep(1000L);
-		assertThat(stat.get()).isTrue();
+		assertTrue(stat.get());
 
 		zk2.delete("/a", -1);
 		Thread.sleep(1000L);
-		assertThat(stat.get()).isFalse();
+		assertFalse(stat.get());
 
 		statMonitor.close();
 		zk2.close();

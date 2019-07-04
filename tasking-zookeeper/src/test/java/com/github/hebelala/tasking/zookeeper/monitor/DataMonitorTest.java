@@ -15,7 +15,10 @@
  */
 package com.github.hebelala.tasking.zookeeper.monitor;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -23,25 +26,26 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.server.ZkServer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import com.github.hebelala.tasking.BaseTest;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(OrderAnnotation.class)
 public class DataMonitorTest extends BaseTest {
 
 	private ZkServer zkServer;
 
-	@Before
+	@BeforeEach
 	public void before() throws Exception {
 		zkServer = startZookeeperServer(2181, true);
 	}
 
-	@After
+	@AfterEach
 	public void after() {
 		if (zkServer != null) {
 			zkServer.shutdown();
@@ -49,7 +53,8 @@ public class DataMonitorTest extends BaseTest {
 	}
 
 	@Test
-	public void test_a_normal() throws Exception {
+	@Order(1)
+	public void testNormal() throws Exception {
 		ZooKeeper zk = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
 		final AtomicReference<byte[]> myData = new AtomicReference<>(null);
@@ -60,21 +65,21 @@ public class DataMonitorTest extends BaseTest {
 			}
 		};
 		dataMonitor.registerTo(zk);
-		
+
 		ZooKeeper zk2 = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
 
 		zk2.create("/a", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isEqualTo("".getBytes());
+		assertArrayEquals("".getBytes(), myData.get());
 
 		zk2.setData("/a", "1".getBytes(), -1);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isEqualTo("1".getBytes());
+		assertArrayEquals("1".getBytes(), myData.get());
 
 		zk2.delete("/a", -1);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isNull();
+		assertNull(myData.get());
 
 		dataMonitor.close();
 		zk2.close();
@@ -82,7 +87,8 @@ public class DataMonitorTest extends BaseTest {
 	}
 
 	@Test
-	public void test_b_acl() throws Exception {
+	@Order(2)
+	public void testAcl() throws Exception {
 		ZooKeeper zk = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
 		final AtomicReference<byte[]> myData = new AtomicReference<>(null);
@@ -93,7 +99,7 @@ public class DataMonitorTest extends BaseTest {
 			}
 		};
 		dataMonitor.registerTo(zk);
-		
+
 		ZooKeeper zk2 = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
 
@@ -103,15 +109,15 @@ public class DataMonitorTest extends BaseTest {
 		Thread.sleep(1000L);
 
 		// because no authority, so register watcher failed
-		assertThat(myData.get()).isNull();
+		assertNull(myData.get());
 
 		zk2.setData("/a", "1".getBytes(), -1);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isNull();
+		assertNull(myData.get());
 
 		zk2.delete("/a", -1);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isNull();
+		assertNull(myData.get());
 
 		dataMonitor.close();
 		zk2.close();
@@ -119,7 +125,8 @@ public class DataMonitorTest extends BaseTest {
 	}
 
 	@Test
-	public void test_c_disconnected() throws Exception {
+	@Order(3)
+	public void testDisconnected() throws Exception {
 		ZooKeeper zk = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
 		final AtomicReference<byte[]> myData = new AtomicReference<>(null);
@@ -130,31 +137,31 @@ public class DataMonitorTest extends BaseTest {
 			}
 		};
 		dataMonitor.registerTo(zk);
-		
+
 		ZooKeeper zk2 = new ZooKeeper(zkServer.getConnectString(), zkServer.getMinSessionTimeout(), (event) -> {
 		});
 
 		zkServer.shutdown();
 		Thread.sleep(zkServer.getMinSessionTimeout() / 2);
-		assertThat(zk.getState().isConnected()).isFalse();
-		assertThat(myData.get()).isNull();
+		assertFalse(zk.getState().isConnected());
+		assertNull(myData.get());
 
 		zkServer = startZookeeperServer(zkServer.getPort(), false);
 		zk.exists("/", false); // make zk client to connect server right now.
-		assertThat(zk.getState().isConnected()).isTrue();
-		assertThat(myData.get()).isNull();
+		assertTrue(zk.getState().isConnected());
+		assertNull(myData.get());
 
 		zk2.create("/a", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isEqualTo("".getBytes());
+		assertArrayEquals("".getBytes(), myData.get());
 
 		zk2.setData("/a", "1".getBytes(), -1);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isEqualTo("1".getBytes());
+		assertArrayEquals("1".getBytes(), myData.get());
 
 		zk2.delete("/a", -1);
 		Thread.sleep(1000L);
-		assertThat(myData.get()).isNull();
+		assertNull(myData.get());
 
 		dataMonitor.close();
 		zk2.close();

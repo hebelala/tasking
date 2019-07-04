@@ -15,32 +15,34 @@
  */
 package com.github.hebelala.tasking.zookeeper;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.server.ZkServer;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import com.github.hebelala.tasking.BaseTest;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(OrderAnnotation.class)
 public class TaskingZookeeperTest extends BaseTest {
 
 	private ZkServer zkServer;
 
-	@Before
+	@BeforeEach
 	public void before() throws Exception {
 		zkServer = startZookeeperServer(2181, true);
 	}
 
-	@After
+	@AfterEach
 	public void after() {
 		if (zkServer != null) {
 			zkServer.shutdown();
@@ -48,21 +50,22 @@ public class TaskingZookeeperTest extends BaseTest {
 	}
 
 	@Test
-	public void test_a_namespaceIsNotReady() throws IOException, InterruptedException {
+	@Order(1)
+	public void testNamespaceIsNotReady() throws IOException, InterruptedException {
 		TaskingZookeeper taskingZookeeper = new TaskingZookeeper(zkServer.getConnectString(),
 				zkServer.getMinSessionTimeout(), "abc", "app", "123456", null);
 		taskingZookeeper.start();
 		taskingZookeeper.blockUntilConnected();
-		assertThat(taskingZookeeper.exists("/")).isNull();
+		assertNull(taskingZookeeper.exists("/"));
 
 		TaskingZookeeper taskingZookeeper2 = new TaskingZookeeper(zkServer.getConnectString(),
 				zkServer.getMinSessionTimeout(), "", "app", "123456", null);
 		taskingZookeeper2.start();
 		taskingZookeeper2.blockUntilConnected();
-		assertThat(taskingZookeeper2.exists("/")).isNotNull();
+		assertNotNull(taskingZookeeper2.exists("/"));
 
-		Assert.assertEquals("/a", taskingZookeeper.create("/a", "", CreateMode.PERSISTENT));
-		assertThat(taskingZookeeper2.exists("/abc/a")).isNotNull();
+		assertEquals("/a", taskingZookeeper.create("/a", "", CreateMode.PERSISTENT));
+		assertNotNull(taskingZookeeper2.exists("/abc/a"));
 
 		taskingZookeeper.stop();
 		Thread.sleep(1000L);
@@ -70,7 +73,8 @@ public class TaskingZookeeperTest extends BaseTest {
 	}
 
 	@Test
-	public void test_expired() throws IOException, InterruptedException {
+	@Order(2)
+	public void testExpired() throws IOException, InterruptedException {
 		TaskingZookeeper taskingZookeeper = new TaskingZookeeper(zkServer.getConnectString(),
 				zkServer.getMinSessionTimeout(), "abc", "app", "123456", null);
 		taskingZookeeper.start();
