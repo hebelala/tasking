@@ -53,7 +53,6 @@ public class SimpleFutureTaskTest {
 		SimpleFutureTask simpleFutureTask = new SimpleFutureTask(new SleepOneSecond());
 		simpleFutureTask.start();
 		assertTrue(simpleFutureTask.await(1100L, TimeUnit.MILLISECONDS));
-		simpleFutureTask.shutdown();
 	}
 
 	@Test
@@ -89,6 +88,26 @@ public class SimpleFutureTaskTest {
 			assertNotNull(throwable2);
 			assertTrue(throwable2 instanceof InterruptedException);
 		});
+	}
+
+	@Test
+	@Order(5)
+	public void testAwaitWhenAlreadyShutdown() throws InterruptedException {
+		SimpleFutureTask simpleFutureTask = new SimpleFutureTask(new SleepOneSecond());
+		simpleFutureTask.start();
+		simpleFutureTask.shutdown();
+		assertTrue(simpleFutureTask.await(1L, TimeUnit.MILLISECONDS));
+	}
+
+	@Test
+	@Order(5)
+	public void testAwaitNegativeTime() throws InterruptedException {
+		SimpleFutureTask simpleFutureTask = new SimpleFutureTask(new SleepOneSecond());
+		simpleFutureTask.start();
+		long startNano = System.nanoTime();
+		assertTrue(simpleFutureTask.await(-1L, TimeUnit.MILLISECONDS));
+		long costMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNano);
+		assertTrue(costMillis > 900L && costMillis < 1100L);
 	}
 
 	class SleepOneSecond implements Runnable {
