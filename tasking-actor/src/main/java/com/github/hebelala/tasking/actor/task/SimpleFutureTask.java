@@ -59,8 +59,9 @@ public class SimpleFutureTask extends Thread {
 			return;
 		}
 		do {
-			Thread.sleep(330L);
 			interrupt();
+			// Wait thread to die with short time, and avoid high cpu used
+			Thread.sleep(33L);
 		} while (isAlive());
 	}
 
