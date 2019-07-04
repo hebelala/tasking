@@ -53,6 +53,8 @@ public class SimpleFutureTaskTest {
 		SimpleFutureTask simpleFutureTask = new SimpleFutureTask(new SleepOneSecond());
 		simpleFutureTask.start();
 		assertTrue(simpleFutureTask.await(1100L, TimeUnit.MILLISECONDS));
+		// Still could be shutdown while simpleFutureTask is finished
+		simpleFutureTask.shutdown();
 	}
 
 	@Test
