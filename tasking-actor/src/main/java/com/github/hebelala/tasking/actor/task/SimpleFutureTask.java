@@ -61,7 +61,7 @@ public class SimpleFutureTask extends Thread {
 		do {
 			Thread.sleep(330L);
 			interrupt();
-		} while (!isAlive());
+		} while (isAlive());
 	}
 
 }
