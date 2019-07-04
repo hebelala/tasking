@@ -18,6 +18,7 @@ package com.github.hebelala.tasking.zookeeper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
@@ -25,6 +26,7 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.server.ZkServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -74,6 +76,7 @@ public class TaskingZookeeperTest extends BaseTest {
 
 	@Test
 	@Order(2)
+	@Disabled("Think a good idea to test")
 	public void testExpired() throws IOException, InterruptedException {
 		TaskingZookeeper taskingZookeeper = new TaskingZookeeper(zkServer.getConnectString(),
 				zkServer.getMinSessionTimeout(), "abc", "app", "123456", null);
@@ -82,5 +85,6 @@ public class TaskingZookeeperTest extends BaseTest {
 		long sessionId = taskingZookeeper.getSessionId();
 		zkServer.closeSession(sessionId);
 		Thread.sleep(10000);
+		assertTrue(true);
 	}
 }

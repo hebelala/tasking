@@ -15,18 +15,26 @@
  */
 package com.github.hebelala.tasking.zookeeper;
 
-import com.github.hebelala.tasking.zookeeper.monitor.Monitor;
-import com.github.hebelala.tasking.zookeeper.retry.Callback;
-import com.github.hebelala.tasking.zookeeper.retry.RetryForever;
-import org.apache.zookeeper.*;
-import org.apache.zookeeper.data.Stat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.Op;
+import org.apache.zookeeper.OpResult;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.github.hebelala.tasking.zookeeper.monitor.Monitor;
+import com.github.hebelala.tasking.zookeeper.retry.Callback;
+import com.github.hebelala.tasking.zookeeper.retry.RetryForever;
 
 /**
  * @author hebelala
@@ -70,6 +78,7 @@ public class TaskingZookeeper implements Watcher {
 				eventThread = Thread.currentThread();
 				break;
 			case Expired:
+				// TODO Expired self-detection
 				shouldRestart = true;
 				break;
 			default:
