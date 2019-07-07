@@ -19,6 +19,9 @@ import org.apache.zookeeper.server.ZkServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author hebelala
+ */
 public abstract class BaseTest {
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());

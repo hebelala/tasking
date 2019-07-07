@@ -20,6 +20,9 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author hebelala
+ */
 public class ZkServer extends ZooKeeperServerMain {
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
